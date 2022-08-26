@@ -1,30 +1,33 @@
-import RPi.GPIO as GPIO
+from threading import Event
 import time
+from typing import List
 
-GPIO.setmode(GPIO.BOARD)
-print(f"mode: {GPIO.getmode()}")
+from board import Board
+from board.DigIn import DigIn
 
-GPIO.setup(3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(7, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+def main():
+    event = Event()
+    event.set()
 
-states = {3: None, 5: None, 7: None}
+    board = Board.instance()
+    board.configure_mode()
+    digins = board.get_digins()
+    show_digins(digins)
 
-def pin_changed(channel):
-    global states
-    
-    state = GPIO.input(channel)
-    if state != states[channel]:
-        states[channel] = state
-        print(f"pin{channel}: {states[channel]}")
-    
-GPIO.add_event_detect(3, GPIO.BOTH)
-GPIO.add_event_detect(5, GPIO.BOTH)
-GPIO.add_event_detect(7, GPIO.BOTH)
+    for digin in digins:
+        digin.add_activate_event_callback(lambda context: event.set())
+        digin.add_deactivate_event_callback(lambda context: event.set())
 
-GPIO.add_event_callback(3, pin_changed)
-GPIO.add_event_callback(5, pin_changed)
-GPIO.add_event_callback(7, pin_changed)
+    while True:
+        event.wait()
+        event.clear()
 
-while True:
-    time.sleep(1)
+        show_digins(digins)
+
+def show_digins(digins: List[DigIn]):
+    for digin in digins:
+        print(f"{digin.name}: {'active' if digin.state() else 'inactive'}")
+
+
+if __name__ == "__main__":
+    main()
