@@ -16,7 +16,6 @@ def main():
 
     for digin in digins:
         digin.add_activate_event_callback(lambda context: event.set())
-        digin.add_deactivate_event_callback(lambda context: event.set())
 
     while True:
         event.wait()
