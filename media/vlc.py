@@ -44,6 +44,8 @@ class Vlc(object):
 
             print(f"Play {path}")
             cmd = [ "cvlc", "--fullscreen", "--no-osd", "--play-and-exit" ]
+            cmd.append("-V")
+            cmd.append("drm_vout")
 
             if loop:
                 cmd.append("--loop")
