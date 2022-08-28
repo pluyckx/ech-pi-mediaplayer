@@ -1,3 +1,4 @@
+import shutil
 from threading import Event
 import time
 from typing import List
@@ -6,14 +7,17 @@ from board import Board
 from board.DigIn import DigIn
 from media.vlc import Vlc
 
+VIDEO_IMAGE = "/home/pi/Media/home.raw"
 VIDEO_BTN1 = "/home/pi/Media/video1.mp4"
 VIDEO_BTN2 = "/home/pi/Media/video2.mp4"
 VIDEO_SWITCH = "/home/pi/Media/video_switch.mp4"
+FB_PATH = "/dev/fb0"
 
 vlc = Vlc()
 event = Event()
 
 def main():
+    show_image()
     event.set()
 
     board = Board.instance()
@@ -37,17 +41,31 @@ def main():
 
         show_digins(digins)
 
+def show_image():
+    shutil.copyfile(VIDEO_IMAGE, FB_PATH)
+
+def hide_image():
+    pass
+
 def play_movie1(*args, **kwargs):
+    hide_image()
     vlc.play(VIDEO_BTN1)
+    vlc.wait()
+    show_image()
 
 def play_movie2(*args, **kwargs):
+    hide_image()
     vlc.play(VIDEO_BTN2)
+    vlc.wait()
+    show_image()
 
 def play_movie_loop(*args, **kwargs):
-    vlc.play(VIDEO_SWITCH)
+    hide_image()
+    vlc.play_loop(VIDEO_SWITCH)
 
 def stop_movie_loop(*args, **kwargs):
     vlc.stop(VIDEO_SWITCH)
+    show_image()
 
 def show_digins(digins: List[DigIn]):
     for digin in digins:
